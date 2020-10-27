@@ -1,6 +1,5 @@
 package com.leo.labs.jenkins.qps.controller;
 
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,15 +13,6 @@ public class HelloController {
 	@GetMapping("hello")
 	public String hello() {
 		return Succ;
-	}
-	public static void main(String[] args) {
-		try {
-
-			String name="";
-			Assert.hasText(name, "test not exist");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 	RateLimiter rateLimiter = RateLimiter.create(1);
