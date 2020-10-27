@@ -7,7 +7,8 @@ pipeline {
 
     parameters {
         string(name: 'pomPath', defaultValue: 'pom.xml', description: 'pom.xml的相对路径')
-        string(name: 'lineCoverage', defaultValue: '20', description: '单元测试代码覆盖率要求(%)，小于此值pipeline将会失败！')
+        string(name: 'minLineCoverage', defaultValue: '20', description: '单元测试代码覆盖率要求(%)，如果任何一个维度的当前覆盖率小于最小覆盖率阈值，则构建状态为失败！')
+        string(name: 'maxLineCoverage', defaultValue: '50', description: '单元测试代码覆盖率要求(%)，如果当前覆盖率在最大阈值和最小阈值之间，则当前构建状态为不稳定,如果当前覆盖率大于最大阈值，则构建成功！')
     }
 
     //pipeline运行结果通知给触发者
@@ -62,17 +63,11 @@ pipeline {
                 echo "JOB_NAME:${JOB_NAME}"
                 echo "BUILD_NUMBER:${BUILD_NUMBER}"
                 //注入jacoco插件配置,clean test执行单元测试代码. All tests should pass.
-                //sh "mvn org.jacoco:jacoco-maven-plugin:prepare-agent -f ${params.pomPath} clean test -Dautoconfig.skip=true -Dmaven.test.skip=false -Dmaven.test.failure.ignore=true"
-                //sh "mvn org.jacoco:jacoco-maven-plugin:prepare-agent -f ecs-som-service-impl/pom.xml clean test -Dtest=com.leo.labs.jenkins.qps.unit.**.* -Dautoconfig.skip=true -Dmaven.test.skip=false -Dmaven.test.failure.ignore=true"
                 sh "mvn clean"
                 sh "mvn org.jacoco:jacoco-maven-plugin:prepare-agent -f ${params.pomPath} clean test -DfailIfNoTests=false -Dtest=com.leo.labs.jenkins.qps.unit.* -Dautoconfig.skip=true -Dmaven.test.skip=false -Dmaven.test.failure.ignore=true"
                 junit '**/target/surefire-reports/*.xml'
                 //配置单元测试覆盖率要求，未达到要求pipeline将会fail,code coverage.LineCoverage>20%.
-                //echo "current lineCoverage is  ${params.lineCoverage} "
-                //if (params.lineCoverage < lineCoverage ) {
-                //    error "单元测试覆盖率过低，请及时修改！failure: 当前覆盖率为 ${params.lineCoverage}"
-                //}
-                jacoco changeBuildStatus: true, maximumLineCoverage: "${params.lineCoverage}"
+                jacoco changeBuildStatus: true, minimumLineCoverage: "${params.minLineCoverage}",maximumLineCoverage: "${params.maxLineCoverage}"
             }
         }
 		stage('静态检查') {
@@ -80,11 +75,9 @@ pipeline {
             steps {
                 echo "starting codeAnalyze with SonarQube......"
                 //sonar:sonar.QualityGate should pass
-                //sh "mvn sonar:sonar  -Dsonar.host.url=http://192.168.33.13:9000 -Dsonar.login=admin -Dsonar.password=admin -Dsonar.exclusions=src/test/** -Dsonar.core.codeCoveragePlugin=jacoco -Dsonar.jacoco.reportPaths=$WORKSPACE/pipeline-jenkins-lab/target/jacoco.exec -Dsonar.dynamicAnalysis=reuseReports"
-               
+                
                  withSonarQubeEnv('sonarserver') {
                     //固定使用项目根目录${basedir}下的pom.xml进行代码检查
-                    //sh "/usr/local/sonar-scanner/bin/sonar-scanner "
                    sh "mvn sonar:sonar  -Dsonar.host.url=http://192.168.33.13:9000 -Dsonar.exclusions=src/test/** -Dsonar.core.codeCoveragePlugin=jacoco -Dsonar.jacoco.reportPaths=$WORKSPACE/pipeline-jenkins-lab/target/jacoco.exec -Dsonar.dynamicAnalysis=reuseReports"
                 }               
 
