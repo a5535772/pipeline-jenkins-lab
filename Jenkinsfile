@@ -76,7 +76,7 @@ pipeline {
             }
         }
 		stage('静态检查') {
-            when { anyOf{branch 'feature/ci';branch 'feature/testing';branch 'main'} }
+            //when { anyOf{branch 'feature/ci';branch 'feature/testing';branch 'main'} }
             steps {
                 echo "starting codeAnalyze with SonarQube......"
                 //sonar:sonar.QualityGate should pass
