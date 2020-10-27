@@ -68,11 +68,15 @@ pipeline {
                 sh "mvn org.jacoco:jacoco-maven-plugin:prepare-agent -f ${params.pomPath} clean test -DfailIfNoTests=false -Dtest=com.leo.labs.jenkins.qps.unit.* -Dautoconfig.skip=true -Dmaven.test.skip=false -Dmaven.test.failure.ignore=true"
                 junit '**/target/surefire-reports/*.xml'
                 //配置单元测试覆盖率要求，未达到要求pipeline将会fail,code coverage.LineCoverage>20%.
+                //echo "current lineCoverage is  ${params.lineCoverage} "
+                //if (params.lineCoverage < lineCoverage ) {
+                //    error "单元测试覆盖率过低，请及时修改！failure: 当前覆盖率为 ${params.lineCoverage}"
+                //}
                 jacoco changeBuildStatus: true, maximumLineCoverage: "${params.lineCoverage}"
             }
         }
 		stage('静态检查') {
-            when { anyOf{branch 'feature/ci';branch 'feature/testing';branch 'master'} }
+            when { anyOf{branch 'feature/ci';branch 'feature/testing';branch 'main'} }
             steps {
                 echo "starting codeAnalyze with SonarQube......"
                 //sonar:sonar.QualityGate should pass
