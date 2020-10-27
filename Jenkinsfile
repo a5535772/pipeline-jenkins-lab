@@ -91,7 +91,7 @@ pipeline {
                 script {
                     timeout(2) {
                         //利用sonar webhook功能通知pipeline代码检测结果，未通过质量阈，pipeline将会fail
-                        def qg = waitForQualityGate()
+                        def qg = waitForQualityGate('sonarserver')
                         echo "${qg.status}"
                         if (qg.status != 'OK') {
                             echo "${qg.status}"
