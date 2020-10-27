@@ -80,8 +80,13 @@ pipeline {
             steps {
                 echo "starting codeAnalyze with SonarQube......"
                 //sonar:sonar.QualityGate should pass
-                sh "mvn sonar:sonar  -Dsonar.host.url=http://192.168.33.13:9000 -Dsonar.login=admin -Dsonar.password=admin -Dsonar.core.codeCoveragePlugin=jacoco -Dsonar.jacoco.reportPaths=$WORKSPACE/pipeline-jenkins-lab/target/jacoco.exec -Dsonar.dynamicAnalysis=reuseReports"
-                
+                //sh "mvn sonar:sonar  -Dsonar.host.url=http://192.168.33.13:9000 -Dsonar.login=admin -Dsonar.password=admin -Dsonar.exclusions=src/test/** -Dsonar.core.codeCoveragePlugin=jacoco -Dsonar.jacoco.reportPaths=$WORKSPACE/pipeline-jenkins-lab/target/jacoco.exec -Dsonar.dynamicAnalysis=reuseReports"
+               
+                 withSonarQubeEnv('sonarserver') {
+                    //固定使用项目根目录${basedir}下的pom.xml进行代码检查
+                    //sh "/usr/local/sonar-scanner/bin/sonar-scanner "
+                   sh "mvn sonar:sonar  -Dsonar.host.url=http://192.168.33.13:9000 -Dsonar.exclusions=src/test/** -Dsonar.core.codeCoveragePlugin=jacoco -Dsonar.jacoco.reportPaths=$WORKSPACE/pipeline-jenkins-lab/target/jacoco.exec -Dsonar.dynamicAnalysis=reuseReports"
+                }               
 
                 script {
                     timeout(2) {
